@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成语大挑战 - 奖惩进阶版</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --success: #6BCB77;
+            --danger: #FF6B6B;
+            --warning: #F5A623;
+            --bg: #F0F4F8;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+        }
+
+        /* 顶部状态栏 */
+        .status-bar {
+            position: absolute; top: 20px; width: 85%;
+            display: flex; justify-content: space-between; align-items: center; z-index: 100;
+        }
+
+        .score-display {
+            background: white; padding: 10px 25px; border-radius: 50px;
+            font-size: 1.5rem; font-weight: bold; color: var(--warning);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 3px solid var(--warning);
+            min-width: 120px;
+        }
+
+        .progress-container { width: 60%; height: 16px; background: #D1D5DB; border-radius: 8px; overflow: hidden; }
+        #progress-bar { height: 100%; width: 0%; background: var(--success); transition: width 0.4s ease; }
+
+        /* 游戏主容器 */
+        .game-card {
+            background: white; width: 95%; max-width: 850px; padding: 40px;
+            border-radius: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            text-align: center; position: relative;
+        }
+
+        /* 浮动分数动画 */
+        .score-float {
+            position: absolute; font-size: 2rem; font-weight: bold;
+            animation: floatUp 0.8s forwards; pointer-events: none; opacity: 0; z-index: 1000;
+        }
+        .score-plus { color: var(--success); }
+        .score-minus { color: var(--danger); }
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-80px); opacity: 0; }
+        }
+
+        /* 菜单与通用元素 */
+        .menu-grid { display: flex; gap: 20px; justify-content: center; margin-top: 30px; }
+        .menu-item {
+            flex: 1; padding: 25px; border: 2px solid #E2E8F0; border-radius: 20px;
+            cursor: pointer; transition: 0.3s; background: #F8FAFC;
+        }
+        .menu-item:hover { border-color: var(--primary); transform: translateY(-5px); background: white; }
+        
+        .matching-area { display: flex; justify-content: space-around; gap: 15px; }
+        .image-box { flex: 1; background: #F9FAFB; border-radius: 16px; padding: 15px; border: 2px solid #E5E7EB; }
+        .idiom-img { width: 100%; height: 180px; object-fit: contain; background: #eee; border-radius: 12px; }
+        
+        .drop-zone { min-height: 60px; border: 3px dashed #CBD5E1; border-radius: 12px; margin-top: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; padding: 5px; }
+        .idiom-card { background: var(--primary); color: white; padding: 8px 15px; border-radius: 8px; cursor: grab; font-weight: bold; }
+        
+        .scenario-box { background: #F8FAFC; padding: 25px; border-radius: 20px; border-left: 8px solid var(--primary); text-align: left; font-size: 1.4rem; line-height: 1.6; }
+        .idiom-btn { background: white; color: var(--primary); border: 2px solid var(--primary); padding: 15px 30px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 1.3rem; margin: 10px; }
+        
+        .correct { background: var(--success) !important; color: white !important; border-color: var(--success) !important; }
+        .wrong-anim { animation: shake 0.4s; background: var(--danger) !important; color: white !important; border-color: var(--danger) !important; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+
+        .rank-box { padding: 20px; border-radius: 20px; background: #FFF9DB; border: 2px solid #FAB005; display: inline-block; margin-top: 20px; }
+        .rank-level { font-size: 3rem; color: #F08C00; display: block; }
+        .btn-next { background: var(--success); color: white; border: none; padding: 15px 50px; border-radius: 50px; font-size: 1.2rem; cursor: pointer; display: none; margin-top: 20px; }
+        .btn-home { background: #94A3B8; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; margin-top: 10px;}
+    </style>
+</head>
+<body>
+
+<div class="status-bar" id="status-bar" style="display:none;">
+    <div class="score-display">积分: <span id="total-score">0</span></div>
+    <div class="progress-container"><div id="progress-bar"></div></div>
+</div>
+
+<div class="game-card" id="game-container"></div>
+
+<script>
+    // 数据配置
+    const round1Data = [
+        { labels: ['A', 'B'], pos: ["手舞足蹈", "兴高采烈"], neg: ["闷闷不乐", "垂头丧气"] },
+        { labels: ['C', 'D'], pos: ["五颜六色", "五彩缤纷"], neg: ["暗淡无光", "灰暗单调"] },
+        { labels: ['E', 'F'], pos: ["天旋地转", "头晕目眩"], neg: ["神清气爽", "头脑清醒"] },
+        { labels: ['G', 'H'], pos: ["无影无踪", "消失殆尽"], neg: ["历历在目", "清晰可见"] },
+        { labels: ['J', 'I'], pos: ["昂首挺胸", "神采飞扬"], neg: ["垂头丧气", "灰心丧气"] },
+        { labels: ['L', 'K'], pos: ["井井有条", "井然有序"], neg: ["乱七八糟", "一塌糊涂"] },
+        { labels: ['N', 'M'], pos: ["意料之中", "不出所料"], neg: ["晴天霹雳", "突如其来"] },
+        { labels: ['O', 'P'], pos: ["如愿以偿", "心想事成"], neg: ["事与愿违", "求之不得"] }
+    ];
+
+    const round2Data = [
+        { context: "听到要去旅行，弟弟高兴得________。", ans: "手舞足蹈", options: ["手舞足蹈", "垂头丧气"] },
+        { context: "深夜里没有灯光，小路看上去________。", ans: "暗淡无光", options: ["五彩缤纷", "暗淡无光"] },
+        { context: "他在太阳下转了十圈，感到________。", ans: "头晕目眩", options: ["头晕目眩", "神清气爽"] },
+        { context: "云朵一会儿就飘走了，变得________。", ans: "无影无踪", options: ["无影无踪", "清晰可见"] },
+        { context: "获奖后，他________地走上台。", ans: "神采飞扬", options: ["神采飞扬", "没精打采"] },
+        { context: "他把房间收拾得________。", ans: "井井有条", options: ["井井有条", "乱七八糟"] },
+        { context: "这个坏消息对他来说是________。", ans: "晴天霹雳", options: ["晴天霹雳", "意料之中"] },
+        { context: "他努力了很久，终于________考上了。", ans: "如愿以偿", options: ["如愿以偿", "事与愿违"] }
+    ];
+
+    let score = 0;
+    let step = 0;
+    let currentRound = 0;
+    const container = document.getElementById('game-container');
+    const totalScoreEl = document.getElementById('total-score');
+
+    function showMenu() {
+        currentRound = 0; step = 0; score = 0;
+        document.getElementById('status-bar').style.display = 'none';
+        container.innerHTML = `
+            <h1 style="color:var(--primary)">🎓 成语大师挑战赛</h1>
+            <p>请选择回合开始，注意：选错会扣分哦！</p>
+            <div class="menu-grid">
+                <div class="menu-item" onclick="startRound(1)">
+                    <span style="font-size:3rem">🖼️</span>
+                    <h3>第一回合</h3><p>图文配对<br>(错误扣5分)</p>
+                </div>
+                <div class="menu-item" onclick="startRound(2)">
+                    <span style="font-size:3rem">📝</span>
+                    <h3>第二回合</h3><p>句子填空<br>(错误扣10分)</p>
+                </div>
+            </div>
+        `;
+    }
+
+    function startRound(r) {
+        currentRound = r;
+        document.getElementById('status-bar').style.display = 'flex';
+        totalScoreEl.innerText = score;
+        render();
+    }
+
+    // 核心积分逻辑：包含加分和扣分
+    function updateScore(amount, x, y) {
+        score += amount;
+        if (score < 0) score = 0; // 保护分数为0
+        totalScoreEl.innerText = score;
+
+        const floatEl = document.createElement('div');
+        floatEl.className = `score-float ${amount > 0 ? 'score-plus' : 'score-minus'}`;
+        floatEl.innerText = amount > 0 ? `+${amount}` : `${amount}`;
+        floatEl.style.left = `${x}px`;
+        floatEl.style.top = `${y}px`;
+        document.body.appendChild(floatEl);
+        setTimeout(() => floatEl.remove(), 800);
+    }
+
+    function render() {
+        const total = (currentRound === 1) ? round1Data.length : round2Data.length;
+        document.getElementById('progress-bar').style.width = `${(step/total)*100}%`;
+        
+        if (currentRound === 1) {
+            const q = round1Data[step];
+            container.innerHTML = `
+                <div class="instruction">第一回合：将正确成语拖入框中</div>
+                <div class="matching-area">
+                    <div class="image-box">
+                        <b>插图 ${q.labels[0]}</b>
+                        <img src="${q.labels[0]}.png" class="idiom-img">
+                        <div class="drop-zone" data-valid='${JSON.stringify(q.pos)}'></div>
+                    </div>
+                    <div class="image-box">
+                        <b>插图 ${q.labels[1]}</b>
+                        <img src="${q.labels[1]}.png" class="idiom-img">
+                        <div class="drop-zone" data-valid='${JSON.stringify(q.neg)}'></div>
+                    </div>
+                </div>
+                <div class="drop-zone" id="pool" style="margin-top:20px; border:none; background:#f0f0f0;">
+                    ${[...q.pos, ...q.neg].sort(()=>Math.random()-0.5).map((w,i)=>`<div class="idiom-card" draggable="true" id="c-${i}">${w}</div>`).join('')}
+                </div>
+                <button class="btn-next" id="btn-next" onclick="nextStep()">下一题 ➔</button>
+            `;
+            bindDrag();
+        } else {
+            const q = round2Data[step];
+            container.innerHTML = `
+                <div class="instruction">第二回合：读情景，点成语</div>
+                <div class="scenario-box">
+                    <button class="speaker-btn" onclick="speak('${q.context}')" style="background:#8B5CF6; border:none; color:white; width:40px; height:40px; border-radius:50%; cursor:pointer;">🔊</button>
+                    <span>${q.context.replace('________', `<span id="ans-slot" style="color:var(--primary); border-bottom:2px solid; padding:0 10px;"> ? </span>`)}</span>
+                </div>
+                <div style="margin-top:30px;">
+                    ${q.options.sort(()=>Math.random()-0.5).map(w => `<button class="idiom-btn" onclick="checkClick(this, '${w}', '${q.ans}', event)">${w}</button>`).join('')}
+                </div>
+                <button class="btn-next" id="btn-next" onclick="nextStep()">下一题 ➔</button>
+            `;
+        }
+    }
+
+    function bindDrag() {
+        const cards = document.querySelectorAll('.idiom-card');
+        const zones = document.querySelectorAll('.drop-zone');
+        cards.forEach(c => { c.ondragstart = (e) => e.dataTransfer.setData('text', e.target.id); });
+        zones.forEach(z => {
+            z.ondragover = (e) => { e.preventDefault(); z.classList.add('hover'); };
+            z.ondrop = (e) => {
+                e.preventDefault();
+                const card = document.getElementById(e.dataTransfer.getData('text'));
+                if (!card) return;
+                const valids = JSON.parse(z.dataset.valid || "[]");
+                
+                if(valids.includes(card.innerText)) {
+                    z.appendChild(card);
+                    card.draggable = false;
+                    card.classList.add('correct');
+                    updateScore(10, e.clientX, e.clientY);
+                    if(document.getElementById('pool').children.length === 0) document.getElementById('btn-next').style.display='inline-block';
+                } else {
+                    card.classList.add('wrong-anim');
+                    updateScore(-5, e.clientX, e.clientY); // 错误扣5分
+                    setTimeout(()=>card.classList.remove('wrong-anim'), 500);
+                }
+            };
+        });
+    }
+
+    function checkClick(btn, choice, ans, e) {
+        if(choice === ans) {
+            btn.classList.add('correct');
+            document.getElementById('ans-slot').innerText = choice;
+            updateScore(20, e.clientX, e.clientY);
+            document.querySelectorAll('.idiom-btn').forEach(b => b.style.pointerEvents = 'none');
+            document.getElementById('btn-next').style.display = 'inline-block';
+        } else {
+            btn.classList.add('wrong-anim');
+            updateScore(-10, e.clientX, e.clientY); // 错误扣10分
+            setTimeout(()=>btn.classList.remove('wrong-anim'), 500);
+        }
+    }
+
+    function nextStep() {
+        step++;
+        const total = (currentRound === 1) ? round1Data.length : round2Data.length;
+        if(step < total) render();
+        else showFinalResult();
+    }
+
+    function showFinalResult() {
+        let level = 1, title = "成语小书童";
+        // 满分基准（不计扣分）约为160分左右
+        if (score >= 150) { level = 6; title = "成语大宗师"; }
+        else if (score >= 120) { level = 5; title = "博学才子"; }
+        else if (score >= 90) { level = 4; title = "成语达人"; }
+        else if (score >= 60) { level = 3; title = "成语小能手"; }
+        else if (score >= 30) { level = 2; title = "初窥门径"; }
+
+        container.innerHTML = `
+            <h1>🎊 挑战结束 🎊</h1>
+            <p>最终累计得分: <b style="font-size:2.5rem; color:var(--warning)">${score}</b></p>
+            <div class="rank-box">
+                <span class="rank-level">${level} 级</span>
+                <strong style="font-size:1.5rem; color:var(--primary)">${title}</strong>
+            </div>
+            <br><br>
+            <button class="btn-home" onclick="showMenu()">重新挑战</button>
+        `;
+    }
+
+    function speak(t) { window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(t); m.lang = 'zh-CN'; window.speechSynthesis.speak(m); }
+
+    showMenu();
+</script>
+</body>
+</html>
