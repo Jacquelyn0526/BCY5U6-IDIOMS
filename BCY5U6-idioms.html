@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>成语大冒险</title>
+    <style>
+        :root {
+            --primary: #6EB5FF; --success: #6BCB77; --danger: #FF8AAE;
+            --warning: #FFD93D; --bg: #E8F9FF; --text: #4B5D67;
+        }
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg); margin: 0;
+            display: flex; justify-content: center; align-items: flex-start;
+            height: 100vh; width: 100vw; overflow: hidden;
+            user-select: none; -webkit-user-select: none;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            position: fixed; top: 10px; width: 92%; height: 50px;
+            background: rgba(255, 255, 255, 0.95); display: flex; 
+            justify-content: space-between; align-items: center; 
+            padding: 0 15px; z-index: 1000; border-radius: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .score-display { font-size: 1.1rem; font-weight: bold; color: #FF9F29; background: #FFFBE9; padding: 4px 12px; border-radius: 15px; border: 2px solid var(--warning); }
+        .progress-container { width: 45%; height: 10px; background: #E2E8F0; border-radius: 5px; }
+        #progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #6BCB77, #A7FF83); border-radius: 5px; transition: width 0.3s; }
+
+        /* 游戏主容器 */
+        .game-card {
+            background: white; width: 100%; height: 100%;
+            padding: 75px 15px 30px 15px; display: flex; flex-direction: column;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+
+        /* 菜单样式 */
+        .menu-title { font-size: 1.8rem; color: #2D31FA; margin-bottom: 20px; text-align: center; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .menu-item {
+            padding: 15px; border: 3px solid #E2E8F0; border-radius: 20px;
+            background: white; text-align: center; cursor: pointer;
+            box-shadow: 0 6px 0px #E2E8F0;
+        }
+        .menu-item:active { transform: translateY(4px); box-shadow: 0 2px 0px #E2E8F0; }
+
+        /* 题目元素 */
+        .instruction { color: #64748B; font-size: 1rem; font-weight: bold; margin-bottom: 10px; text-align: center; }
+        .scenario-box { 
+            background: #F0F7FF; padding: 20px; border-radius: 20px; 
+            border: 3px solid #D0E8FF; font-size: 1.25rem; line-height: 1.6; 
+            margin-bottom: 15px; color: #333; position: relative;
+        }
+
+        /* 第一回合：字母匹配布局 */
+        .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .img-card { background: #FDF6F0; border: 3px solid #FFE5D9; border-radius: 20px; padding: 10px; text-align: center; }
+        .idiom-img { width: 100%; height: 110px; object-fit: contain; background: white; border-radius: 12px; margin-bottom: 10px; }
+        
+        /* 字母输入框 - 手机端大尺寸 */
+        .letter-input {
+            width: 55px; height: 55px; border: 3px solid var(--primary);
+            border-radius: 50%; font-size: 1.6rem; font-weight: bold;
+            color: var(--primary); text-align: center; line-height: 50px;
+            background: white; display: block; margin: 0 auto;
+            outline: none; -webkit-appearance: none;
+        }
+        .letter-input.correct { background: var(--success); color: white; border-color: var(--success); }
+        
+        .word-bank {
+            background: #F1F5F9; padding: 15px; border-radius: 20px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        }
+        .word-tag { background: white; padding: 8px; border-radius: 10px; font-weight: bold; font-size: 0.9rem; text-align: left; border: 1px solid #ddd; }
+        .word-tag span { color: var(--danger); margin-right: 5px; font-size: 1.1rem; }
+
+        /* 选项按钮 */
+        .option-list { display: flex; flex-direction: column; gap: 10px; }
+        .option-btn { 
+            background: white; border: 3px solid #E2E8F0; padding: 15px; 
+            border-radius: 20px; font-size: 1.1rem; text-align: left;
+            box-shadow: 0 5px 0px #E2E8F0;
+        }
+        .option-btn:active { transform: translateY(3px); box-shadow: 0 2px 0px #E2E8F0; }
+
+        /* 反馈动画 */
+        .score-float { position: fixed; font-size: 2.5rem; font-weight: bold; animation: floatUp 0.8s forwards; pointer-events: none; z-index: 2000; }
+        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
+        .correct-anim { background: var(--success) !important; color: white !important; animation: bounce 0.5s; }
+        @keyframes bounce { 0%, 100% {transform: scale(1);} 50% {transform: scale(1.1);} }
+        .wrong-anim { animation: shake 0.4s; background: var(--danger) !important; color: white !important; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-8px);} 75% {transform: translateX(8px);} }
+
+        .btn-next { background: linear-gradient(180deg, #FFD93D, #FF9F29); color: white; border: none; padding: 18px; border-radius: 35px; font-size: 1.3rem; font-weight: bold; width: 100%; display: none; box-shadow: 0 6px 0px #D87D00; margin-top: 15px; }
+        .rank-box { padding: 25px; border-radius: 30px; background: #FFFBE9; border: 4px solid #FFD93D; margin: 20px 0; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="status-bar" id="status-bar" style="display:none;">
+    <button style="background:#94A3B8; color:white; border:none; padding:6px 15px; border-radius:15px;" onclick="showMenu()">🏠 返回</button>
+    <div class="progress-container"><div id="progress-bar"></div></div>
+    <div class="score-display">⭐ <span id="total-score">0</span></div>
+</div>
+
+<div class="game-card" id="game-container"></div>
+
+<script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSfx(f, d) {
+        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+        o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
+    }
+    const soundCorrect = () => playSfx(880, 0.3);
+    const soundWrong = () => playSfx(150, 0.4);
+
+    // --- 数据配置 ---
+    // 第一回合：每页2张图，词库4选2。按字母配对。
+    const r1Data = [
+        { imgs: [{id:'A', src:'A.png', ans:'K'}, {id:'B', src:'B.png', ans:'L'}], bank:[{l:'K', w:'手舞足蹈'}, {l:'L', w:'闷闷不乐'}, {l:'M', w:'昂首挺胸'}, {l:'N', w:'垂头丧气'}]},
+        { imgs: [{id:'C', src:'C.png', ans:'Q'}, {id:'D', src:'D.png', ans:'R'}], bank:[{l:'Q', w:'五颜六色'}, {l:'R', w:'暗淡无光'}, {l:'S', w:'色彩缤纷'}, {l:'T', w:'灰暗单调'}]},
+        { imgs: [{id:'E', src:'E.png', ans:'U'}, {id:'F', src:'F.png', ans:'V'}], bank:[{l:'U', w:'头晕目眩'}, {l:'V', w:'神采飞扬'}, {l:'W', w:'天旋地转'}, {l:'X', w:'神清气爽'}]},
+        { imgs: [{id:'G', src:'G.png', ans:'Y'}, {id:'H', src:'H.png', ans:'Z'}], bank:[{l:'Y', w:'无影无踪'}, {l:'Z', w:'历历在目'}, {l:'A', w:'消失殆尽'}, {l:'B', w:'清晰可见'}]},
+        { imgs: [{id:'I', src:'I.png', ans:'C'}, {id:'J', src:'J.png', ans:'D'}], bank:[{l:'C', w:'垂头丧气'}, {l:'D', w:'昂首挺胸'}, {l:'E', w:'灰心丧气'}, {l:'F', w:'神采飞扬'}]},
+        { imgs: [{id:'K', src:'K.png', ans:'G'}, {id:'L', src:'L.png', ans:'H'}], bank:[{l:'G', w:'一塌糊涂'}, {l:'H', w:'井井有条'}, {l:'I', w:'乱七八糟'}, {l:'J', w:'井然有序'}]},
+        { imgs: [{id:'M', src:'M.png', ans:'O'}, {id:'N', src:'N.png', ans:'P'}], bank:[{l:'O', w:'晴天霹雳'}, {l:'P', w:'意料之中'}, {l:'Q', w:'突如其来'}, {l:'R', w:'不出所料'}]},
+        { imgs: [{id:'O', src:'O.png', ans:'S'}, {id:'P', src:'P.png', ans:'T'}], bank:[{l:'S', w:'如愿以偿'}, {l:'T', w:'求而不得'}, {l:'U', w:'心想事成'}, {l:'V', w:'事与愿违'}]}
+    ];
+
+    const r2Data = [
+        { q: "全家人要去旅游，弟弟高兴得________。", ans: "手舞足蹈", opts: ["手舞足蹈", "垂头丧气"] },
+        { q: "深夜街道没有灯，看过去________。", ans: "暗淡无光", opts: ["五颜六色", "暗淡无光"] },
+        { q: "他在烈日下跑了很久，感到________。", ans: "天旋地转", opts: ["天旋地转", "神清气爽"] },
+        { q: "毕业多年，但画面依然________。", ans: "历历在目", opts: ["无影无踪", "历历在目"] },
+        { q: "虽然比赛输了，但运动员依然________。", ans: "昂首挺胸", opts: ["垂头丧气", "昂首挺胸"] },
+        { q: "顽皮的弟弟把书丢得________。", ans: "乱七八糟", opts: ["井井有条", "乱七八糟"] },
+        { q: "晴朗天空突然暴雨，简直是________。", ans: "晴天霹雳", opts: ["晴天霹雳", "不出所料"] },
+        { q: "他努力一年却病了，结果________。", ans: "事与愿违", opts: ["如愿以偿", "事与愿违"] }
+    ];
+
+    const r3Data = [
+        { q: "哪个成语与<b>“手舞足蹈”</b>意思相反？", opts: ["A. 欢天喜地", "B. 闷闷不乐", "C. 活蹦乱跳", "D. 眉开眼笑"], ans: "B" },
+        { q: "哪个成语与<b>“垂头丧气”</b>意思相近？", opts: ["A. 昂首挺胸", "B. 灰心丧气", "C. 得意洋洋", "D. 精神抖擞"], ans: "B" },
+        { q: "哪个成语与<b>“如愿以偿”</b>意思相近？", opts: ["A. 事与愿违", "B. 心想事成", "C. 求之不得", "D. 大失所望"], ans: "B" },
+        { q: "哪个成语与<b>“天旋地转”</b>意思相近？", opts: ["A. 头晕目眩", "B. 神清气爽", "C. 稳如泰山", "D. 心平气和"], ans: "A" },
+        { q: "哪个成语与<b>“无影无踪”</b>意思相反？", opts: ["A. 销声匿迹", "B. 踪迹全无", "C. 历历在目", "D. 烟消云散"], ans: "C" },
+        { q: "哪个成语与<b>“一塌糊涂”</b>意思相近？", opts: ["A. 井井有条", "B. 乱七八糟", "C. 井然有序", "D. 一丝不苟"], ans: "B" },
+        { q: "哪个成语与<b>“晴天霹雳”</b>意思相反？", opts: ["A. 突如其来", "B. 意料之中", "C. 猝不及防", "D. 风云突变"], ans: "B" },
+        { q: "与<b>“分辨”</b>的意思相近的词语是？", opts: ["A. 混淆", "B. 辨别", "C. 忽略", "D. 统一"], ans: "B" }
+    ];
+
+    const r4Data = [
+        { q: "哪句正确使用了<b>“五颜六色”</b>？", opts: ["A. 房间整理得五颜六色", "B. 天空挂着五颜六色的彩虹", "C. 故事讲得五颜六色", "D. 穿黑色的五颜六色衣服"], ans: "B" },
+        { q: "哪句正确使用了<b>“晴天霹雳”</b>？", opts: ["A. 晴天霹雳的好天气", "B. 高兴得像晴天霹雳", "C. 消息犹如晴天霹雳", "D. 晴天霹雳的掌声"], ans: "C" },
+        { q: "哪句正确使用了<b>“一塌糊涂”</b>？", opts: ["A. 字写得工整且一塌糊涂", "B. 演出的精彩一塌糊涂", "C. 面粉撒得一塌糊涂", "D. 答案算得一塌糊涂全对"], ans: "C" },
+        { q: "哪句正确使用了<b>“手舞足蹈”</b>？", opts: ["A. 安静地手舞足蹈", "B. 赢了球，队员手舞足蹈", "C. 手舞足蹈地批评学生", "D. 手舞足蹈地睡着了"], ans: "B" },
+        { q: "哪句正确使用了<b>“天旋地转”</b>？", opts: ["A. 开心的天旋地转", "B. 站起来天旋地转差点晕倒", "C. 天旋地转的太阳升起", "D. 内容天旋地转很容易懂"], ans: "B" },
+        { q: "哪句正确使用了<b>“无影无踪”</b>？", opts: ["A. 书包消失得无影无踪", "B. 风筝在头顶飞得无影无踪", "C. 小狗在脚边跑得无影无踪", "D. 无影无踪的月亮在夜空"], ans: "A" },
+        { q: "哪句正确使用了<b>“如愿以偿”</b>？", opts: ["A. 如愿以偿地输了", "B. 如愿以偿被批评", "C. 哥哥如愿以偿考上大学", "D. 大雨如愿以偿破坏野餐"], ans: "C" },
+        { q: "哪句正确使用了<b>“垂头丧气”</b>？", opts: ["A. 垂头丧气跳舞很高兴", "B. 胜利后垂头丧气", "C. 找不到主人，小狗垂头丧气", "D. 阳光垂头丧气地照耀"], ans: "C" }
+    ];
+
+    let score = 0, step = 0, currentRound = 0;
+    const container = document.getElementById('game-container');
+    const progBar = document.getElementById('progress-bar');
+
+    function showMenu() {
+        window.speechSynthesis.cancel(); currentRound = 0; step = 0; score = 0;
+        document.getElementById('status-bar').style.display = 'none';
+        container.innerHTML = `
+            <h1 class="menu-title">成语大冒险 🏆</h1>
+            <div class="menu-grid">
+                <div class="menu-item" onclick="startRound(1)"><span>🖼️</span><h3>第一回合</h3><p>图文配对</p></div>
+                <div class="menu-item" onclick="startRound(2)"><span>📝</span><h3>第二回合</h3><p>填空挑战</p></div>
+                <div class="menu-item" onclick="startRound(3)"><span>📣</span><h3>第三回合</h3><p>近义反义</p></div>
+                <div class="menu-item" onclick="startRound(4)"><span>✅</span><h3>第四回合</h3><p>语境辨析</p></div>
+            </div>`;
+    }
+
+    function startRound(r) { currentRound = r; step = 0; document.getElementById('status-bar').style.display = 'flex'; render(); }
+
+    function updateScore(n, x=200, y=300) {
+        score = Math.max(0, score + n);
+        document.getElementById('total-score').innerText = score;
+        const f = document.createElement('div'); f.className = 'score-float';
+        f.innerText = n > 0 ? `+${n}` : n;
+        f.style.color = n > 0 ? '#6BCB77' : '#FF8AAE';
+        f.style.left = x + 'px'; f.style.top = y + 'px';
+        document.body.appendChild(f); setTimeout(()=>f.remove(), 800);
+        if(n > 0) soundCorrect(); else soundWrong();
+    }
+
+    function render() {
+        const data = [null, r1Data, r2Data, r3Data, r4Data][currentRound];
+        progBar.style.width = `${((step+1)/data.length)*100}%`;
+        const q = data[step];
+        let html = `<div class="instruction">第 ${step+1} 题 / 共 ${data.length} 题</div>`;
+
+        if (currentRound === 1) {
+            html += `<div class="scenario-box">观察插图，在圆圈内输入下方对应成语的字母。</div>
+                <div class="match-grid">
+                    ${q.imgs.map(item => `
+                        <div class="img-card">
+                            <b>图 ${item.id}</b>
+                            <img src="${item.src}" class="idiom-img">
+                            <input type="text" class="letter-input" maxlength="1" 
+                                   oninput="handleInput(this, '${item.ans}', event)"
+                                   placeholder="?">
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="word-bank">
+                    ${q.bank.map(w => `<div class="word-tag"><span>${w.l}</span> ${w.w}</div>`).join('')}
+                </div>`;
+        } else if (currentRound === 2) {
+            html += `<div class="scenario-box">🔊 ${q.q.replace('________', '<span style="color:var(--primary)">___</span>')}</div>
+                <div class="option-list">${q.opts.map(o => `<button class="option-btn" onclick="handleChoice(this, '${o}', '${q.ans}', event)">${o}</button>`).join('')}</div>`;
+            speak(q.q);
+        } else {
+            html += `<div class="scenario-box" onclick="speakLong()">🔊 ${q.q}</div>
+                <div class="option-list">${q.opts.map(o => `<button class="option-btn" onclick="handleChoice(this, '${o}', '${q.ans}', event)">${o}</button>`).join('')}</div>`;
+            speakLong();
+        }
+        html += `<button class="btn-next" id="bn" onclick="next()">下一题 ➔</button>`;
+        container.innerHTML = html;
+        container.scrollTop = 0;
+    }
+
+    // 第一回合判定
+    function handleInput(input, ans, e) {
+        const val = input.value.toUpperCase();
+        if (val === ans) {
+            input.classList.add('correct'); input.disabled = true;
+            updateScore(20, e.target.getBoundingClientRect().left, e.target.getBoundingClientRect().top);
+            const all = document.querySelectorAll('.letter-input');
+            if(Array.from(all).every(i => i.classList.contains('correct'))) document.getElementById('bn').style.display='block';
+        } else if (val !== "") {
+            input.value = ""; input.classList.add('wrong-anim');
+            updateScore(-5, e.target.getBoundingClientRect().left, e.target.getBoundingClientRect().top);
+            setTimeout(()=>input.classList.remove('wrong-anim'), 400);
+        }
+    }
+
+    // 其他回合判定
+    function handleChoice(btn, val, ans, e) {
+        if (val.includes(ans)) {
+            btn.classList.add('correct-anim');
+            updateScore(20, e.clientX, e.clientY);
+            document.querySelectorAll('.option-btn').forEach(b => b.style.pointerEvents = 'none');
+            document.getElementById('bn').style.display = 'block';
+        } else {
+            btn.classList.add('wrong-anim');
+            updateScore(-10, e.clientX, e.clientY);
+            setTimeout(()=>btn.classList.remove('wrong-anim'), 400);
+        }
+    }
+
+    function next() { step++; const d = [null,r1Data,r2Data,r3Data,r4Data][currentRound]; if(step < d.length) render(); else finish(); }
+
+    function finish() {
+        window.speechSynthesis.cancel();
+        let lv = Math.min(6, Math.floor(score/45)+1);
+        const titles = ["","书童","小健将","小能手","达人","才子","大宗师"];
+        container.innerHTML = `<div style="text-align:center; padding:40px 10px;">
+            <span style="font-size:4rem;">🏆</span>
+            <h2>大功告成！</h2>
+            <div class="rank-box"><span style="font-size:3rem; display:block;">${lv} 级</span><b>称号：${titles[lv]}</b></div>
+            <button class="btn-next" style="display:block" onclick="showMenu()">返回主菜单</button>
+        </div>`;
+    }
+
+    function speak(t) { window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(t.replace(/<[^>]+>/g,'')); m.lang='zh-CN'; window.speechSynthesis.speak(m); }
+    function speakLong() {
+        const d = [null,r1Data,r2Data,r3Data,r4Data][currentRound]; if(!d[step]) return;
+        let t = d[step].q.replace(/<[^>]+>/g,'');
+        if(currentRound === 4) d[step].opts.forEach(o => t += "。选项 " + o.replace('.','：'));
+        speak(t);
+    }
+    showMenu();
+</script>
+</body>
+</html>
