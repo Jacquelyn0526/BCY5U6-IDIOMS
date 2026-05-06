@@ -3,141 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>成语大冒险 - 童趣彩虹版</title>
+    <title>成语大冒险 - 终极童趣版</title>
     <style>
-        /* 1. 核心视觉定义 */
         :root {
-            --primary: #6EB5FF; /* 梦幻蓝 */
-            --success: #A7FF83; /* 活泼绿 */
-            --danger: #FF8AAE;  /* 樱花粉 */
-            --warning: #FFD93D; /* 太阳黄 */
-            --bg: #E8F9FF;      /* 浅云蓝 */
-            --text: #4B5D67;
+            --primary: #6EB5FF; --success: #6BCB77; --danger: #FF8AAE;
+            --warning: #FFD93D; --bg: #E8F9FF; --text: #4B5D67;
         }
 
-        * { 
-            -webkit-tap-highlight-color: transparent; 
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
 
         body {
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: var(--bg);
-            background-image: radial-gradient(#BFEAF5 1px, transparent 1px);
-            background-size: 20px 20px;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
+            background-color: var(--bg); margin: 0;
+            display: flex; justify-content: center; align-items: flex-start;
+            height: 100vh; width: 100vw; overflow: hidden;
         }
 
-        /* 2. 状态栏 - 泡泡风格 */
+        /* 状态栏 */
         .status-bar {
             position: fixed; top: 10px; width: 92%; height: 50px;
-            background: rgba(255, 255, 255, 0.9); 
-            display: flex; justify-content: space-between; 
-            align-items: center; padding: 0 15px; z-index: 100;
-            border-radius: 25px;
-            box-shadow: 0 8px 0px rgba(110, 181, 255, 0.2);
+            background: rgba(255, 255, 255, 0.9); display: flex; 
+            justify-content: space-between; align-items: center; 
+            padding: 0 15px; z-index: 100; border-radius: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
-        .score-display {
-            font-size: 1.1rem; font-weight: bold; color: #FF9F29;
-            background: #FFFBE9; padding: 4px 12px; border-radius: 15px;
-            border: 2px solid var(--warning);
-        }
-        .progress-container { width: 45%; height: 12px; background: #E2E8F0; border-radius: 6px; }
-        #progress-bar { 
-            height: 100%; width: 0%; background: linear-gradient(90deg, #6BCB77, #A7FF83); 
-            border-radius: 6px; transition: width 0.3s; 
-        }
+        .score-display { font-size: 1.1rem; font-weight: bold; color: #FF9F29; background: #FFFBE9; padding: 4px 12px; border-radius: 15px; border: 2px solid var(--warning); }
+        .progress-container { width: 45%; height: 10px; background: #E2E8F0; border-radius: 5px; }
+        #progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #6BCB77, #A7FF83); border-radius: 5px; transition: width 0.3s; }
 
-        /* 3. 游戏卡片容器 */
+        /* 游戏容器 */
         .game-card {
             background: white; width: 100%; height: 100%;
-            padding: 75px 15px 30px 15px; 
-            display: flex; flex-direction: column;
+            padding: 75px 15px 30px 15px; display: flex; flex-direction: column;
             overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
 
-        /* 4. 主菜单设计 */
-        .menu-title { font-size: 1.8rem; color: #2D31FA; margin-bottom: 5px; text-shadow: 2px 2px 0px #D0D1FF; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        /* 菜单设计 */
+        .menu-title { font-size: 1.8rem; color: #2D31FA; margin-bottom: 20px; text-align: center; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .menu-item {
-            padding: 20px 10px; border: 3px solid #E2E8F0; border-radius: 25px;
-            background: #FFFFFF; text-align: center; cursor: pointer;
-            box-shadow: 0 8px 0px #E2E8F0;
+            padding: 15px; border: 3px solid #E2E8F0; border-radius: 20px;
+            background: white; text-align: center; cursor: pointer;
+            box-shadow: 0 6px 0px #E2E8F0; transition: 0.2s;
         }
-        .menu-item:active { transform: translateY(4px); box-shadow: 0 4px 0px #E2E8F0; }
-        .menu-item h3 { font-size: 1.1rem; margin: 10px 0; color: #4A90E2; }
-        .menu-item .icon { font-size: 2.5rem; display: block; }
+        .menu-item:active { transform: translateY(4px); box-shadow: 0 2px 0px #E2E8F0; }
+        .menu-item h3 { font-size: 1rem; margin: 8px 0; color: var(--primary); }
 
-        /* 5. 题目与内容设计 */
-        .instruction { color: #64748B; font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; }
+        /* 题目元素 */
+        .instruction { color: #64748B; font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; text-align: center; }
         .scenario-box { 
-            background: #F0F7FF; padding: 20px; border-radius: 25px; 
-            border: 3px solid #D0E8FF; font-size: 1.25rem; 
-            line-height: 1.6; margin-bottom: 20px; position: relative;
-            box-shadow: inset 0 4px 0px rgba(255,255,255,0.5);
-            color: #333;
+            background: #F0F7FF; padding: 20px; border-radius: 20px; 
+            border: 3px solid #D0E8FF; font-size: 1.2rem; line-height: 1.6; 
+            margin-bottom: 15px; color: #333; position: relative;
         }
-        
-        .option-list { display: flex; flex-direction: column; gap: 12px; }
+        .blank-space { border-bottom: 3px solid #CBD5E1; padding: 0 10px; color: var(--primary); font-weight: bold; min-width: 80px; display: inline-block; text-align: center; }
+
+        /* 交互元素 */
+        .option-list { display: flex; flex-direction: column; gap: 10px; }
         .option-btn { 
             background: white; color: #334155; border: 3px solid #E2E8F0; 
-            padding: 16px 18px; border-radius: 20px; font-size: 1.1rem;
-            text-align: left; line-height: 1.4; transition: 0.2s;
-            box-shadow: 0 6px 0px #E2E8F0;
+            padding: 14px; border-radius: 18px; font-size: 1.05rem;
+            text-align: left; box-shadow: 0 5px 0px #E2E8F0; transition: 0.2s;
         }
-        .option-btn:active { transform: translateY(3px); box-shadow: 0 3px 0px #E2E8F0; }
+        .option-btn:active { transform: translateY(3px); box-shadow: 0 2px 0px #E2E8F0; }
 
-        /* 6. 回合一专用样式 */
-        .matching-area { display: flex; flex-direction: column; gap: 15px; }
-        .image-box { background: #FDF6F0; padding: 15px; border-radius: 25px; border: 3px solid #FFE5D9; }
-        .idiom-img { width: 100%; height: 150px; object-fit: contain; border-radius: 15px; background: #FFF; }
-        .drop-zone { min-height: 55px; border: 3px dashed #FFD1BB; margin-top: 10px; border-radius: 15px; display: flex; flex-wrap: wrap; justify-content: center; padding: 5px; }
-        .idiom-card { 
-            background: linear-gradient(135deg, #6EB5FF, #4A90E2); 
-            color: white; padding: 12px 20px; border-radius: 15px; 
-            font-size: 1rem; margin: 5px; font-weight: bold;
-            box-shadow: 0 5px 0px #357ABD;
-        }
+        /* 第一回合配对区 */
+        .matching-area { display: flex; flex-direction: column; gap: 12px; }
+        .image-box { background: #FDF6F0; padding: 10px; border-radius: 20px; border: 2px solid #FFE5D9; text-align: center; }
+        .idiom-img { width: 100%; height: 130px; object-fit: contain; background: white; border-radius: 12px; }
+        .drop-zone { min-height: 50px; border: 2px dashed #FFD1BB; margin-top: 8px; border-radius: 12px; display: flex; flex-wrap: wrap; justify-content: center; padding: 5px; }
+        .idiom-card { background: var(--primary); color: white; padding: 10px 15px; border-radius: 12px; font-size: 0.95rem; font-weight: bold; margin: 4px; box-shadow: 0 4px 0px #357ABD; touch-action: none; }
 
-        /* 7. 反馈效果 */
-        .score-float { position: fixed; font-size: 2.5rem; font-weight: bold; animation: floatUp 0.8s forwards; pointer-events: none; z-index: 200; text-shadow: 2px 2px 0px rgba(255,255,255,0.5); }
+        /* 动画与反馈 */
+        .score-float { position: fixed; font-size: 2.5rem; font-weight: bold; animation: floatUp 0.8s forwards; pointer-events: none; z-index: 200; }
         @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
-        
-        .correct-anim { 
-            background: linear-gradient(135deg, #A7FF83, #6BCB77) !important; 
-            color: white !important; border-color: #6BCB77 !important;
-            box-shadow: 0 6px 0px #4CAF50 !important;
-            animation: bounce 0.5s ease;
-        }
-        @keyframes bounce { 0%, 100% {transform: scale(1);} 50% {transform: scale(1.1);} }
+        .correct-anim { background: var(--success) !important; color: white !important; border-color: #6BCB77 !important; box-shadow: 0 5px 0px #4CAF50 !important; }
+        .wrong-anim { animation: shake 0.4s; background: var(--danger) !important; color: white !important; border-color: #FF5D8F !important; box-shadow: 0 5px 0px #D84315 !important; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-6px);} 75% {transform: translateX(6px);} }
 
-        .wrong-anim { 
-            animation: shake 0.4s; background: #FF8AAE !important; 
-            color: white !important; border-color: #FF5D8F !important;
-            box-shadow: 0 6px 0px #D84315 !important;
-        }
-        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-8px);} 75% {transform: translateX(8px);} }
-
-        .btn-next { 
-            background: linear-gradient(180deg, #FFD93D, #FF9F29); 
-            color: white; border: none; padding: 18px; border-radius: 35px; 
-            font-size: 1.3rem; font-weight: bold; margin-top: 25px; width: 100%; 
-            display: none; box-shadow: 0 8px 0px #D87D00;
-        }
-        .btn-next:active { transform: translateY(4px); box-shadow: 0 4px 0px #D87D00; }
-        
-        .btn-home { background: #94A3B8; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 0.9rem; }
-
-        .rank-box { padding: 25px; border-radius: 30px; background: #FFFBE9; border: 4px solid #FFD93D; margin: 20px 0; box-shadow: 0 10px 0px #FFD93D; }
-        .rank-level { font-size: 3.5rem; color: #FF9F29; display: block; text-shadow: 2px 2px 0px #FFF; }
+        .btn-next { background: linear-gradient(180deg, #FFD93D, #FF9F29); color: white; border: none; padding: 16px; border-radius: 30px; font-size: 1.2rem; font-weight: bold; margin-top: 20px; width: 100%; display: none; box-shadow: 0 6px 0px #D87D00; }
+        .btn-home { background: #94A3B8; color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 0.8rem; }
+        .rank-box { padding: 20px; border-radius: 25px; background: #FFFBE9; border: 3px solid #FFD93D; margin: 20px 0; text-align: center; }
     </style>
 </head>
 <body>
@@ -152,169 +98,164 @@
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(freq, type, duration) {
+    function playSound(f, t, d) {
         try {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
+            g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(); o.stop(audioCtx.currentTime + d);
         } catch(e) {}
     }
     const soundCorrect = () => { playSound(880, 'sine', 0.2); setTimeout(()=>playSound(1100, 'sine', 0.2), 100); };
     const soundWrong = () => playSound(150, 'triangle', 0.4);
 
-    const round3Data = [
-        { q: "“高兴得手舞足蹈。”<br>哪个成语与<b>“手舞足蹈”</b>意思相反？", options: ["A. 欢天喜地", "B. 闷闷不乐", "C. 活蹦乱跳", "D. 眉开眼笑"], ans: "B. 闷闷不乐" },
-        { q: "“垂头丧气地说……”<br>哪个词与<b>“垂头丧气”</b>意思相近？", options: ["A. 昂首挺胸", "B. 灰心丧气", "C. 得意洋洋", "D. 精神抖擞"], ans: "B. 灰心丧气" },
-        { q: "“他们吃尽苦头，才如愿以偿。”<br>哪个词与<b>“如愿以偿”</b>意思相近？", options: ["A. 事与愿违", "B. 心想事成", "C. 求之不得", "D. 大失所望"], ans: "B. 心想事成" },
-        { q: "“却令我天旋地转。”<br>哪个词与<b>“天旋地转”</b>意思相近？", options: ["A. 头晕目眩", "B. 神清气爽", "C. 稳如泰山", "D. 心平气和"], ans: "A. 头晕目眩" },
-        { q: "“消失得无影无踪。”<br>哪个词与<b>“无影无踪”</b>意思相反？", options: ["A. 销声匿迹", "B. 踪迹全无", "C. 历历在目", "D. 烟消云散"], ans: "C. 历历在目" },
-        { q: "“搞得一塌糊涂。”<br>哪个词与<b>“一塌糊涂”</b>意思相近？", options: ["A. 井井有条", "B. 乱七八糟", "C. 井然有序", "D. 一丝不苟"], ans: "B. 乱七八糟" },
-        { q: "“晴天霹雳的惩罚。”<br>哪个词与<b>“晴天霹雳”</b>意思相反？", options: ["A. 突如其来", "B. 意料之中", "C. 猝不及防", "D. 风云突变"], ans: "B. 意料之中" },
-        { q: "“分辨各种颜色。”<br>哪个词与<b>“分辨”</b>意思相近？", options: ["A. 混淆", "B. 辨别", "C. 忽略", "D. 统一"], ans: "B. 辨别" }
+    // --- 数据配置 ---
+    const r1Data = [
+        { labels: ['A', 'B'], pos: ["手舞足蹈", "欢天喜地", "兴高采烈"], neg: ["闷闷不乐", "垂头丧气"] },
+        { labels: ['C', 'D'], pos: ["五颜六色", "五彩缤纷", "色彩缤纷"], neg: ["暗淡无光", "灰暗单调"] },
+        { labels: ['E', 'F'], pos: ["天旋地转", "头晕目眩", "眼花缭乱"], neg: ["神清气爽", "头脑清醒"] },
+        { labels: ['G', 'H'], pos: ["历历在目", "清晰可见"], neg: ["无影无踪", "消失殆尽", "杳无踪迹"] },
+        { labels: ['J', 'I'], pos: ["昂首挺胸", "神采飞扬"], neg: ["垂头丧气", "灰心丧气", "没精打采"] },
+        { labels: ['L', 'K'], pos: ["井井有条", "井然有序"], neg: ["一塌糊涂", "乱七八糟", "不可收拾"] },
+        { labels: ['N', 'M'], pos: ["意料之中", "不出所料"], neg: ["晴天霹雳", "突如其来", "猝不及防"] },
+        { labels: ['O', 'P'], pos: ["如愿以偿", "心想事成", "得偿所愿"], neg: ["事与愿违", "求之不得"] }
     ];
 
-    const round4Data = [
-        { q: "哪句正确使用了<b>“五颜六色”</b>？", options: ["A. 房间整理得五颜六色", "B. 天空挂着五颜六色的彩虹", "C. 故事讲得五颜六色", "D. 穿着黑色的五颜六色衣服"], ans: "B" },
-        { q: "哪句正确使用了<b>“晴天霹雳”</b>？", options: ["A. 明媚的晴天霹雳好天气", "B. 高兴得像晴天霹雳", "C. 生病的消息犹如晴天霹雳", "D. 晴天霹雳的掌声"], ans: "C" },
-        { q: "哪句正确使用了<b>“一塌糊涂”</b>？", options: ["A. 字写得一塌糊涂且工整", "B. 演出的精彩一塌糊涂", "C. 面粉撒得一塌糊涂", "D. 答案算得一塌糊涂完全正确"], ans: "C" },
-        { q: "哪句正确使用了<b>“手舞足蹈”</b>？", options: ["A. 安静地手舞足蹈", "B. 赢了球，队员们手舞足蹈", "C. 手舞足蹈地批评学生", "D. 手舞足蹈地睡着了"], ans: "B" },
-        { q: "哪句正确使用了<b>“天旋地转”</b>？", options: ["A. 开心的天旋地转", "B. 一站起来就天旋地转差点晕倒", "C. 天旋地转的太阳升起", "D. 内容天旋地转很容易懂"], ans: "B" },
-        { q: "哪句正确使用了<b>“无影无踪”</b>？", options: ["A. 书包忘在教室消失得无影无踪", "B. 风筝在头顶飞得无影无踪", "C. 小狗在脚边跑得无影无踪", "D. 无影无踪的月亮在夜空"], ans: "A" },
-        { q: "哪句正确使用了<b>“如愿以偿”</b>？", options: ["A. 终于如愿以偿输了", "B. 如愿以偿地被批评", "C. 哥哥如愿以偿考上大学", "D. 大雨如愿以偿破坏野餐"], ans: "C" },
-        { q: "哪句正确使用了<b>“垂头丧气”</b>？", options: ["A. 垂头丧气地跳舞很高兴", "B. 胜利后垂头丧气", "C. 找不到主人，小狗垂头丧气", "D. 阳光垂头丧气地照耀"], ans: "C" }
+    const r2Data = [
+        { context: "全家人要去旅游，弟弟高兴得________。", ans: "手舞足蹈", options: ["手舞足蹈", "垂头丧气"] },
+        { context: "深夜街道没有灯，看过去________。", ans: "暗淡无光", options: ["色彩缤纷", "暗淡无光"] },
+        { context: "他在烈日下跑了很久，感到________。", ans: "天旋地转", options: ["天旋地转", "神清气爽"] },
+        { context: "毕业多年，但画面依然________。", ans: "历历在目", options: ["无影无踪", "历历在目"] },
+        { context: "虽然比赛输了，但运动员依然________。", ans: "昂首挺胸", options: ["垂头丧气", "昂首挺胸"] },
+        { context: "顽皮的弟弟把书丢得________。", ans: "乱七八糟", options: ["井然有序", "乱七八糟"] },
+        { context: "晴朗天空突然暴雨，简直是________。", ans: "晴天霹雳", options: ["晴天霹雳", "意料之中"] },
+        { context: "他努力一年却病了，结果________。", ans: "事与愿违", options: ["如愿以偿", "事与愿违"] }
+    ];
+
+    const r3Data = [
+        { q: "“高兴得手舞足蹈。”哪个成语与<b>“手舞足蹈”</b>意思相反？", options: ["A. 欢天喜地", "B. 闷闷不乐", "C. 活蹦乱跳", "D. 眉开眼笑"], ans: "B. 闷闷不乐" },
+        { q: "“垂头丧气地说……”哪个成语与<b>“垂头丧气”</b>意思相近？", options: ["A. 昂首挺胸", "B. 灰心丧气", "C. 得意洋洋", "D. 精神抖擞"], ans: "B. 灰心丧气" },
+        { q: "“才如愿以偿。”哪个成语与<b>“如愿以偿”</b>意思相近？", options: ["A. 事与愿违", "B. 心想事成", "C. 求之不得", "D. 大失所望"], ans: "B. 心想事成" },
+        { q: "“却令我天旋地转。”哪个成语与<b>“天旋地转”</b>意思相近？", options: ["A. 头晕目眩", "B. 神清气爽", "C. 稳如泰山", "D. 心平气和"], ans: "A. 头晕目眩" },
+        { q: "“消失得无影无踪。”哪个成语与<b>“无影无踪”</b>意思相反？", options: ["A. 销声匿迹", "B. 踪迹全无", "C. 历历在目", "D. 烟消云散"], ans: "C. 历历在目" },
+        { q: "“生活被搞得一塌糊涂。”哪个成语与<b>“一塌糊涂”</b>意思相近？", options: ["A. 井井有条", "B. 乱七八糟", "C. 井然有序", "D. 一丝不苟"], ans: "B. 乱七八糟" },
+        { q: "“这是晴天霹雳的惩罚。”哪个成语与<b>“晴天霹雳”</b>意思相反？", options: ["A. 突如其来", "B. 意料之中", "C. 猝不及防", "D. 风云突变"], ans: "B. 意料之中" },
+        { q: "“能分辨各种颜色。”哪个词语与<b>“分辨”</b>意思相近？", options: ["A. 混淆", "B. 辨别", "C. 忽略", "D. 统一"], ans: "B. 辨别" }
+    ];
+
+    const r4Data = [
+        { q: "哪句正确使用了<b>“五颜六色”</b>？", options: ["A. 房间整理得五颜六色", "B. 天空挂着五颜六色的彩虹", "C. 故事讲得五颜六色", "D. 穿黑色的五颜六色衣服"], ans: "B" },
+        { q: "哪句正确使用了<b>“晴天霹雳”</b>？", options: ["A. 晴天霹雳的好天气", "B. 高兴得像晴天霹雳", "C. 消息犹如晴天霹雳", "D. 晴天霹雳的掌声"], ans: "C" },
+        { q: "哪句正确使用了<b>“一塌糊涂”</b>？", options: ["A. 字写得工整且一塌糊涂", "B. 演出的精彩一塌糊涂", "C. 面粉撒得一塌糊涂", "D. 答案算得一塌糊涂全对"], ans: "C" },
+        { q: "哪句正确使用了<b>“手舞足蹈”</b>？", options: ["A. 安静地手舞足蹈", "B. 赢了球，队员手舞足蹈", "C. 手舞足蹈地批评学生", "D. 手舞足蹈地睡着了"], ans: "B" },
+        { q: "哪句正确使用了<b>“天旋地转”</b>？", options: ["A. 开心的天旋地转", "B. 站起来天旋地转差点晕倒", "C. 天旋地转的太阳升起", "D. 内容天旋地转很容易懂"], ans: "B" },
+        { q: "哪句正确使用了<b>“无影无踪”</b>？", options: ["A. 书包消失得无影无踪", "B. 风筝在头顶飞得无影无踪", "C. 小狗在脚边跑得无影无踪", "D. 无影无踪的月亮在夜空"], ans: "A" },
+        { q: "哪句正确使用了<b>“如愿以偿”</b>？", options: ["A. 如愿以偿地输了", "B. 如愿以偿被批评", "C. 哥哥如愿以偿考上大学", "D. 大雨如愿以偿破坏野餐"], ans: "C" },
+        { q: "哪句正确使用了<b>“垂头丧气”</b>？", options: ["A. 垂头丧气跳舞很高兴", "B. 胜利后垂头丧气", "C. 找不到主人，小狗垂头丧气", "D. 阳光垂头丧气地照耀"], ans: "C" }
     ];
 
     let score = 0, step = 0, currentRound = 0;
     const container = document.getElementById('game-container');
+    const bar = document.getElementById('progress-bar');
 
     function showMenu() {
-        window.speechSynthesis.cancel();
-        currentRound = 0; step = 0; score = 0;
+        window.speechSynthesis.cancel(); currentRound = 0; step = 0; score = 0;
         document.getElementById('status-bar').style.display = 'none';
         container.innerHTML = `
-            <div style="text-align:center;">
-                <h1 class="menu-title">成语大挑战 🏆</h1>
-                <p style="color:#64748B; font-weight:bold;">小小成语家，挑战赢积分！</p>
-            </div>
+            <div style="text-align:center;"><h1 class="menu-title">成语大挑战 🏆</h1><p style="color:#64748B;">点击回合开始，赢取勋章吧！</p></div>
             <div class="menu-grid">
-                <div class="menu-item" onclick="startRound(1)">
-                    <span class="icon">🎨</span><h3>第一回合</h3><p>图文配对</p>
-                </div>
-                <div class="menu-item" onclick="startRound(2)">
-                    <span class="icon">📝</span><h3>第二回合</h3><p>句子填空</p>
-                </div>
-                <div class="menu-item" onclick="startRound(3)">
-                    <span class="icon">📣</span><h3>第三回合</h3><p>练习（一）</p>
-                </div>
-                <div class="menu-item" onclick="startRound(4)">
-                    <span class="icon">✅</span><h3>第四回合</h3><p>练习（二）</p>
-                </div>
-            </div>
-        `;
+                <div class="menu-item" onclick="startRound(1)"><span>🎨</span><h3>第一回合</h3><p>图文配对</p></div>
+                <div class="menu-item" onclick="startRound(2)"><span>📝</span><h3>第二回合</h3><p>填空挑战</p></div>
+                <div class="menu-item" onclick="startRound(3)"><span>📣</span><h3>第三回合</h3><p>近义反义</p></div>
+                <div class="menu-item" onclick="startRound(4)"><span>✅</span><h3>第四回合</h3><p>语境辨析</p></div>
+            </div>`;
     }
 
-    function startRound(r) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        currentRound = r; step = 0;
-        document.getElementById('status-bar').style.display = 'flex';
-        render();
-    }
+    function startRound(r) { if (audioCtx.state === 'suspended') audioCtx.resume(); currentRound = r; step = 0; document.getElementById('status-bar').style.display = 'flex'; render(); }
 
     function updateScore(amount, e) {
         score = Math.max(0, score + amount);
         document.getElementById('total-score').innerText = score;
-        const f = document.createElement('div');
-        f.className = 'score-float';
+        const f = document.createElement('div'); f.className = 'score-float';
         f.innerText = amount > 0 ? `+${amount}` : amount;
         f.style.color = amount > 0 ? '#6BCB77' : '#FF8AAE';
-        const touch = e.touches ? e.touches[0] : (e.clientX ? e : {clientX: window.innerWidth/2, clientY: window.innerHeight/2});
-        f.style.left = `${touch.clientX - 20}px`; f.style.top = `${touch.clientY - 20}px`;
-        document.body.appendChild(f);
-        setTimeout(() => f.remove(), 800);
+        const t = e.touches ? e.touches[0] : (e.clientX ? e : {clientX: 200, clientY: 300});
+        f.style.left = `${t.clientX - 20}px`; f.style.top = `${t.clientY - 20}px`;
+        document.body.appendChild(f); setTimeout(() => f.remove(), 800);
         if(amount > 0) soundCorrect(); else soundWrong();
     }
 
     function render() {
-        // 第一、二回合逻辑略（已在代码中包含结构），为了演示重点渲染三四回合
-        const data = currentRound === 4 ? round4Data : round3Data; 
-        document.getElementById('progress-bar').style.width = `${((step+1)/data.length)*100}%`;
+        const data = [null, r1Data, r2Data, r3Data, r4Data][currentRound];
+        bar.style.width = `${((step+1)/data.length)*100}%`;
         const qData = data[step];
-        
-        container.innerHTML = `
-            <div class="instruction">正在挑战：第 ${step+1} 题 / 共 ${data.length} 题</div>
-            <div class="scenario-box" onclick="speakFullContent()">🔊 ${qData.q}</div>
-            <div class="option-list">
-                ${qData.options.map(opt => `<button class="option-btn" onclick="checkAnswer(this, '${opt}', '${qData.ans}', event)">${opt}</button>`).join('')}
-            </div>
-            <button class="btn-next" id="btn-next" onclick="nextStep()">下一题 ➔</button>
-        `;
-        container.scrollTop = 0;
-        speakFullContent();
-    }
+        let html = `<div class="instruction">第 ${currentRound} 回合：第 ${step+1}/${data.length} 题</div>`;
 
-    function checkAnswer(btn, choice, ans, e) {
-        // 逻辑判断
-        const isCorrect = choice.trim().includes(ans);
-        if(isCorrect) {
-            window.speechSynthesis.cancel();
-            btn.classList.add('correct-anim');
-            updateScore(20, e);
-            document.querySelectorAll('.option-btn').forEach(b => b.style.pointerEvents = 'none');
-            document.getElementById('btn-next').style.display = 'block';
-        } else {
-            btn.classList.add('wrong-anim'); updateScore(-10, e);
-            setTimeout(()=>btn.classList.remove('wrong-anim'), 400);
-        }
-    }
-
-    function nextStep() {
-        step++;
-        const data = currentRound === 4 ? round4Data : round3Data;
-        if(step < data.length) render(); else showFinal();
-    }
-
-    function showFinal() {
-        window.speechSynthesis.cancel();
-        let level = 1;
-        if (score >= 140) level = 6;
-        else if (score >= 110) level = 5;
-        else if (score >= 80) level = 4;
-        else if (score >= 50) level = 3;
-        else if (score >= 20) level = 2;
-
-        const titles = ["", "成语小书童", "初窥门径", "成语小能手", "成语达人", "博学才子", "成语大宗师"];
-        container.innerHTML = `
-            <div style="text-align:center; padding-top:20px;">
-                <span style="font-size:5rem;">⭐</span>
-                <h2 style="color:#FF9F29;">挑战成功！</h2>
-                <p>获得积分：<b style="font-size:2rem; color:var(--warning);">${score}</b></p>
-                <div class="rank-box">
-                    <span class="rank-level">${level} 级</span>
-                    <strong style="color:var(--primary); font-size:1.4rem;">称号：${titles[level]}</strong>
-                </div>
-                <button class="btn-next" style="display:inline-block" onclick="showMenu()">返回主菜单</button>
+        if (currentRound === 1) {
+            html += `<div class="matching-area">
+                <div class="image-box"><b>图 ${qData.labels[0]}</b><img src="${qData.labels[0]}.png" class="idiom-img"><div class="drop-zone" data-valid='${JSON.stringify(qData.pos)}'></div></div>
+                <div class="image-box"><b>图 ${qData.labels[1]}</b><img src="${qData.labels[1]}.png" class="idiom-img"><div class="drop-zone" data-valid='${JSON.stringify(qData.neg)}'></div></div>
+            </div><div class="drop-zone" id="pool" style="border:none; background:#f0f0f0; margin-top:15px;">
+                ${[...qData.pos, ...qData.neg].sort(()=>Math.random()-0.5).map((w,i)=>`<div class="idiom-card" draggable="true" id="c-${i}">${w}</div>`).join('')}
             </div>`;
-    }
-
-    function speakFullContent() {
-        window.speechSynthesis.cancel();
-        const data = currentRound === 4 ? round4Data : (currentRound === 3 ? round3Data : []);
-        if(!data[step]) return;
-        const qData = data[step];
-        let text = qData.q.replace(/<[^>]+>/g, '');
-        if(currentRound === 4) {
-            qData.options.forEach(o => text += "。选项 " + o.replace('.', '：'));
+        } else if (currentRound === 2) {
+            html += `<div class="scenario-box">🔊 ${qData.context.replace('________', `<span class="blank-space" id="bl">?</span>`)}</div>
+                <div style="display:flex; justify-content:center; gap:15px;">
+                ${qData.options.map(o => `<button class="option-btn" style="text-align:center;" onclick="check(this, '${o}', '${qData.ans}', event)">${o}</button>`).join('')}
+                </div>`;
+            speak(qData.context.replace('________', '什么什么'));
+        } else {
+            html += `<div class="scenario-box" onclick="speakLong()">🔊 ${qData.q}</div>
+                <div class="option-list">${qData.options.map(o => `<button class="option-btn" onclick="check(this, '${o}', '${qData.ans}', event)">${o}</button>`).join('')}</div>`;
+            speakLong();
         }
-        const m = new SpeechSynthesisUtterance(text);
-        m.lang = 'zh-CN'; m.rate = 0.95;
-        window.speechSynthesis.speak(m);
+        html += `<button class="btn-next" id="bn" onclick="next()">下一题 ➔</button>`;
+        container.innerHTML = html;
+        if(currentRound === 1) bindD();
     }
 
+    function check(btn, ch, ans, e) {
+        if(ch.includes(ans)) {
+            window.speechSynthesis.cancel(); btn.classList.add('correct-anim'); updateScore(20, e);
+            if(document.getElementById('bl')) document.getElementById('bl').innerText = ans;
+            document.querySelectorAll('.option-btn').forEach(b => b.style.pointerEvents = 'none');
+            document.getElementById('bn').style.display = 'block';
+        } else { btn.classList.add('wrong-anim'); updateScore(-10, e); setTimeout(()=>btn.classList.remove('wrong-anim'), 400); }
+    }
+
+    function bindD() {
+        const cs = document.querySelectorAll('.idiom-card'); const zs = document.querySelectorAll('.drop-zone');
+        cs.forEach(c => c.ondragstart = (e) => e.dataTransfer.setData('t', e.target.id));
+        zs.forEach(z => {
+            z.ondragover = (e) => e.preventDefault();
+            z.ondrop = (e) => {
+                e.preventDefault(); const c = document.getElementById(e.dataTransfer.getData('t'));
+                const v = JSON.parse(z.dataset.valid || "[]");
+                if(v.includes(c.innerText)) {
+                    z.appendChild(c); c.draggable = false; updateScore(10, e);
+                    if(document.getElementById('pool').children.length === 0) document.getElementById('bn').style.display='block';
+                } else { c.classList.add('wrong-anim'); updateScore(-5, e); setTimeout(()=>c.classList.remove('wrong-anim'), 400); }
+            };
+        });
+    }
+
+    function next() { step++; const d = [null,r1Data,r2Data,r3Data,r4Data][currentRound]; if(step < d.length) render(); else fin(); }
+
+    function fin() {
+        window.speechSynthesis.cancel(); let lv = Math.min(6, Math.floor(score/40)+1);
+        const ts = ["","书童","初学者","小能手","达人","才子","大宗师"];
+        container.innerHTML = `<div style="text-align:center;"><span style="font-size:4rem;">⭐</span><h2 style="color:#FF9F29;">挑战成功！</h2><p>积分：<b>${score}</b></p><div class="rank-box"><span class="rank-level">${lv} 级</span><b>称号：${ts[lv]}</b></div><button class="btn-next" style="display:inline-block" onclick="showMenu()">返回主菜单</button></div>`;
+    }
+
+    function speak(t) { window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(t); m.lang = 'zh-CN'; m.rate = 1.0; window.speechSynthesis.speak(m); }
+    function speakLong() {
+        const d = [null,r1Data,r2Data,r3Data,r4Data][currentRound]; if(!d[step]) return;
+        let t = d[step].q.replace(/<[^>]+>/g, '');
+        if(currentRound === 4) d[step].options.forEach(o => t += "。选项 " + o.replace('.', '：'));
+        speak(t);
+    }
     showMenu();
 </script>
 </body>
